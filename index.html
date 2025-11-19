@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- Metadados básicos para o navegador -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planilha de Custos da Obra (com Firebase)</title>
-    <!-- Carrega o framework de estilo Tailwind CSS para um design rápido e moderno -->
+    <title>Planilha de Custos da Obra (Demo Portfolio)</title>
+    
+    <!-- 1. Tailwind CSS: Framework de estilos para a UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carrega a fonte 'Inter' do Google Fonts para uma melhor legibilidade -->
+    <!-- 2. Google Fonts: Fonte 'Inter' para a tipografia -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Carrega a biblioteca de ícones 'Lucide' -->
+    <!-- 3. Lucide Icons: Biblioteca de ícones (ex: 'x', 'alert-triangle') -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- Estilos CSS customizados -->
     <style>
+        /* Define a fonte padrão e a cor de fundo */
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        /* Classes para a navegação por abas (ativa vs. inativa) */
         .tab-active { border-bottom-color: #3b82f6; font-weight: 600; }
         .tab { border-bottom-color: transparent; }
+        
+        /* Classes para mostrar/esconder o conteúdo das abas */
         .content-section { display: none; }
         .content-active { display: block; }
+        
+        /* Estilos dos Modais (pop-ups) */
         .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
+        
+        /* Animação do 'loader' (círculo giratório) */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         .spinner { border: 2px solid #fff; border-top-color: transparent; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -25,18 +37,23 @@
 </head>
 <body class="p-4 md:p-8">
 
+    <!-- Container Principal da Aplicação -->
     <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
         
+        <!-- Seção do Cabeçalho: Título e Botão de Adicionar -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Controle de Custos da Construção</h1>
                 <p class="text-gray-500 mt-1">Dados salvos na nuvem e sincronizados em tempo real.</p>
             </div>
+            <!-- O botão "Adicionar" é injetado aqui dinamicamente pelo JavaScript (função updateAddItemButton) -->
             <div id="add-item-button-container" class="mt-4 md:mt-0"></div>
         </div>
 
+        <!-- Navegação Principal por Abas -->
         <div class="border-b border-gray-200 mb-6">
             <nav class="flex space-x-4 -mb-px overflow-x-auto" aria-label="Tabs">
+                <!-- Os botões chamam a função changeTab() no JavaScript para trocar a aba visível -->
                 <button data-tab="resumo" onclick="window.App.changeTab('resumo')" class="tab tab-active text-blue-500 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Resumo Geral</button>
                 <button data-tab="materiais" onclick="window.App.changeTab('materiais')" class="tab text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Materiais</button>
                 <button data-tab="mao-de-obra" onclick="window.App.changeTab('mao-de-obra')" class="tab text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Mão de Obra</button>
@@ -44,14 +61,33 @@
             </nav>
         </div>
 
+        <!-- Container de Conteúdo (onde o JS mostra/esconde as seções das abas) -->
         <div id="content">
-            <!-- Resumo Geral: O painel principal que mostra os totais da obra -->
+            
+            <!-- Seção 1: Resumo Geral (Carregada como padrão) -->
             <div id="resumo-content" class="content-section content-active">
+                <!-- Cards de Totais (Custo Total, Diferença, Progresso) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg"><h3 class="text-sm font-medium text-blue-800 uppercase">Custo Total da Obra</h3><p id="total-real" class="mt-2 text-4xl font-bold text-blue-900">R$ 0,00</p><p id="total-previsto" class="text-sm text-blue-700 mt-1">Previsto: R$ 0,00</p></div>
-                    <div id="diferenca-card" class="bg-gray-50 border-l-4 border-gray-500 p-6 rounded-lg"><h3 class="text-sm font-medium text-gray-800 uppercase">Diferença</h3><p id="diferenca-valor" class="mt-2 text-4xl font-bold text-gray-900">R$ 0,00</p><p id="diferenca-status" class="text-sm text-gray-700 mt-1">Planejado vs. Real</p></div>
-                    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg"><h3 class="text-sm font-medium text-green-800 uppercase">Progresso do Orçamento</h3><div class="w-full bg-green-200 rounded-full h-4 mt-3"><div id="progresso-barra" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div></div><p id="progresso-texto" class="text-sm text-green-700 mt-2 text-center">0% do orçamento previsto utilizado.</p></div>
+                    <!-- Card Custo Total -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+                        <h3 class="text-sm font-medium text-blue-800 uppercase">Custo Total da Obra</h3>
+                        <p id="total-real" class="mt-2 text-4xl font-bold text-blue-900">R$ 0,00</p>
+                        <p id="total-previsto" class="text-sm text-blue-700 mt-1">Previsto: R$ 0,00</p>
+                    </div>
+                    <!-- Card Diferença (Orçado vs. Real) -->
+                    <div id="diferenca-card" class="bg-gray-50 border-l-4 border-gray-500 p-6 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-800 uppercase">Diferença</h3>
+                        <p id="diferenca-valor" class="mt-2 text-4xl font-bold text-gray-900">R$ 0,00</p>
+                        <p id="diferenca-status" class="text-sm text-gray-700 mt-1">Planejado vs. Real</p>
+                    </div>
+                    <!-- Card Progresso do Orçamento -->
+                    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
+                        <h3 class="text-sm font-medium text-green-800 uppercase">Progresso do Orçamento</h3>
+                        <div class="w-full bg-green-200 rounded-full h-4 mt-3"><div id="progresso-barra" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div></div>
+                        <p id="progresso-texto" class="text-sm text-green-700 mt-2 text-center">0% do orçamento previsto utilizado.</p>
+                    </div>
                 </div>
+                <!-- Cards de Detalhes (Totais por Categoria) -->
                 <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-gray-50 p-6 rounded-lg"><h4 class="font-semibold text-gray-700">Materiais</h4><p id="materiais-total-real" class="text-2xl font-bold text-gray-900 mt-2">R$ 0,00</p><p id="materiais-total-previsto" class="text-sm text-gray-500">Previsto: R$ 0,00</p></div>
                     <div class="bg-gray-50 p-6 rounded-lg"><h4 class="font-semibold text-gray-700">Mão de Obra</h4><p id="mao-de-obra-total-real" class="text-2xl font-bold text-gray-900 mt-2">R$ 0,00</p><p id="mao-de-obra-total-previsto" class="text-sm text-gray-500">Previsto: R$ 0,00</p></div>
@@ -59,49 +95,83 @@
                 </div>
             </div>
 
-            <!-- Seções de Conteúdo das Abas -->
+            <!-- Seção 2: Materiais (Conteúdo injetado pelo JS) -->
             <div id="materiais-content" class="content-section"></div>
+            <!-- Seção 3: Mão de Obra (Conteúdo injetado pelo JS) -->
             <div id="mao-de-obra-content" class="content-section"></div>
+            <!-- Seção 4: Outros Custos (Conteúdo injetado pelo JS) -->
             <div id="outros-custos-content" class="content-section"></div>
         </div>
     </div>
 
-    <!-- Modais (Janelas Pop-up) -->
-    <div id="item-modal" class="fixed inset-0 z-50 items-center justify-center hidden"><div class="modal-backdrop fixed inset-0" onclick="window.App.closeModal()"></div><div class="bg-white rounded-lg shadow-xl m-4 sm:max-w-lg w-full z-10"><div class="p-6"><div class="flex justify-between items-center"><h3 id="modal-title" class="text-xl font-semibold text-gray-800">Adicionar Item</h3><button onclick="window.App.closeModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><form id="item-form" class="mt-4 space-y-4"></form></div></div></div>
-    <div id="confirm-modal" class="fixed inset-0 z-50 items-center justify-center hidden"><div class="modal-backdrop fixed inset-0" onclick="window.App.closeConfirmModal()"></div><div class="bg-white rounded-lg shadow-xl m-4 sm:max-w-md w-full z-10">
-        <div class="flex justify-between items-center p-4 border-b border-gray-200">
-            <h3 id="confirm-modal-title" class="text-lg leading-6 font-medium text-gray-900">Excluir Item</h3>
-            <button onclick="window.App.closeConfirmModal()" class="text-gray-400 hover:text-gray-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div class="flex items-start">
-                <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 sm:mx-0">
-                    <i data-lucide="alert-triangle" class="h-6 w-6 text-red-600"></i>
+    <!-- 
+      MODAIS (Pop-ups)
+      Ficam escondidos (hidden) por padrão e são mostrados pelo JavaScript 
+      adicionando a classe 'flex' e removendo 'hidden'.
+    -->
+
+    <!-- Modal 1: Adicionar/Editar Item (Formulário dinâmico) -->
+    <div id="item-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div class="modal-backdrop fixed inset-0" onclick="window.App.closeModal()"></div>
+        <div class="bg-white rounded-lg shadow-xl m-4 sm:max-w-lg w-full z-10">
+            <div class="p-6">
+                <div class="flex justify-between items-center">
+                    <h3 id="modal-title" class="text-xl font-semibold text-gray-800">Adicionar Item</h3>
+                    <button onclick="window.App.closeModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
-                <div class="mt-1 sm:ml-4 sm:text-left">
-                    <p id="confirm-modal-text" class="text-sm text-gray-500">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
-                </div>
+                <!-- O formulário (campos) é injetado aqui pelo JS (função getFormFields) -->
+                <form id="item-form" class="mt-4 space-y-4"></form>
             </div>
         </div>
-        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-            <button id="confirm-delete-btn" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Excluir</button>
-            <button id="cancel-delete-btn" onclick="window.App.closeConfirmModal()" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">Cancelar</button>
+    </div>
+    
+    <!-- Modal 2: Confirmação de Exclusão -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div class="modal-backdrop fixed inset-0" onclick="window.App.closeConfirmModal()"></div>
+        <div class="bg-white rounded-lg shadow-xl m-4 sm:max-w-md w-full z-10">
+            <!-- Cabeçalho do Modal de Confirmação -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 id="confirm-modal-title" class="text-lg leading-6 font-medium text-gray-900">Excluir Item</h3>
+                <button onclick="window.App.closeConfirmModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <!-- Corpo do Modal -->
+            <div class="p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 sm:mx-0">
+                        <i data-lucide="alert-triangle" class="h-6 w-6 text-red-600"></i>
+                    </div>
+                    <div class="mt-1 sm:ml-4 sm:text-left">
+                        <p id="confirm-modal-text" class="text-sm text-gray-500">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Rodapé com Botões de Ação -->
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+                <button id="confirm-delete-btn" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Excluir</button>
+                <button id="cancel-delete-btn" onclick="window.App.closeConfirmModal()" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">Cancelar</button>
+            </div>
         </div>
-    </div></div>
+    </div>
 
+    <!-- 
+      INÍCIO DO CÉREBRO DA APLICAÇÃO (JAVASCRIPT)
+      Usamos type="module" para poder usar 'import' e 'export' modernos.
+    -->
     <script type="module">
         // =================================================================================
         // SEÇÃO 1: CONFIGURAÇÃO E CONEXÃO COM O FIREBASE
         // =================================================================================
 
+        // Importa as funções do SDK do Firebase que vamos usar
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { 
             getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, where, getDocs, setDoc
         } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-        // Objeto de configuração do seu projeto Firebase.
+        // Suas chaves de API do Firebase (o "endereço" do seu banco de dados)
+        // CONFIGURAÇÃO DO PROJETO PÚBLICO (PORTFÓLIO)
         const firebaseConfig = {
             apiKey: "AIzaSyCdydUpJpJo-IvdkCKhKvAtUDHeEu-giMc",
             authDomain: "obra-dos-meus-pais-teste.firebaseapp.com",
@@ -110,48 +180,91 @@
             messagingSenderId: "100940051405",
             appId: "1:100940051405:web:f69664404d4264b8bdca84"
         };
+        
+        // Inicializa a conexão com o Firebase.
         const app = initializeApp(firebaseConfig);
+        // Pega a referência do banco de dados (Firestore) para ler e escrever dados.
         const db = getFirestore(app);
 
         // =================================================================================
-        // SEÇÃO 2: ESTADO DA APLICAÇÃO
+        // SEÇÃO 2: ESTADO DA APLICAÇÃO (A "MEMÓRIA" LOCAL)
         // =================================================================================
         
+        // 'data' é o nosso "cérebro" local. Ele guarda uma cópia atualizada dos dados 
+        // que vêm do Firebase (nuvem) para que possamos usá-los rapidamente.
         let data = { 
-            materiais: [], 
-            servicos: [],
-            pagamentos: [],
-            "outros-custos": [],
-            orcamentos: {} 
+            materiais: [],          // Array para guardar todos os documentos de 'materiais'
+            servicos: [],           // Array para guardar todos os 'servicos' (contratos)
+            pagamentos: [],         // Array para guardar todos os 'pagamentos'
+            "outros-custos": [],    // Array para guardar 'outros-custos'
+            orcamentos: {}          // Objeto para guardar as metas (ex: { materiais: 50000, 'outros-custos': 10000 })
         };
-        let activeTab = 'resumo';
-        let editingItemId = null;
-        let currentModalContext = {};
+        
+        // Variáveis que controlam o estado atual da UI (Interface do Usuário)
+        let activeTab = 'resumo';       // Guarda qual aba está selecionada (ex: 'resumo', 'materiais')
+        let editingItemId = null;     // Guarda o ID do item sendo editado. Se for 'null', o modal está em modo "Adicionar".
+        let currentModalContext = {}; // Guarda dados extras para o modal (ex: a qual contrato 'servicoId' um pagamento pertence)
 
         // =================================================================================
-        // SEÇÃO 3: FUNÇÕES DE UTILIDADE
+        // SEÇÃO 3: FUNÇÕES DE UTILIDADE (PEQUENOS "AJUDANTES" GLOBAIS)
         // =================================================================================
 
+        /**
+         * Formata um número para o padrão de moeda brasileiro (BRL).
+         * Ex: 5000 -> R$ 5.000,00
+         * @param {number} value - O número a ser formatado.
+         * @returns {string} - A string formatada como moeda.
+         */
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
         
+        /**
+         * Formata uma data do tipo 'AAAA-MM-DD' (ISO) para 'DD/MM/AAAA' (Brasil).
+         * @param {string} isoDate - A data no formato 'AAAA-MM-DD'.
+         * @returns {string} - A data formatada como 'DD/MM/AAAA' ou '-' se inválida.
+         */
+        const formatDate = (isoDate) => {
+            if (!isoDate || !isoDate.includes('-')) return '-'; // Se não tiver data ou for inválida, retorna o traço
+            const [year, month, day] = isoDate.split('-'); // Quebra '2025-11-07' em ['2025', '11', '07']
+            return `${day}/${month}/${year}`; // Retorna '07/11/2025'
+        };
+
         // =================================================================================
-        // SEÇÃO 4: FUNÇÕES DE RENDERIZAÇÃO (Construção da Interface)
+        // SEÇÃO 4: FUNÇÕES DE RENDERIZAÇÃO (DESENHANDO A TELA)
+        // Estas funções são responsáveis por pegar os dados da 'SEÇÃO 2' e transformá-los em HTML.
         // =================================================================================
 
+        /**
+         * Cria o "espartilho" (esqueleto) de uma tabela HTML. É um template reutilizável.
+         * @param {string} title - O título da tabela.
+         * @param {string[]} headers - Um array com os nomes das colunas (ex: ['Valor', 'Data']).
+         * @param {string} bodyId - O ID que será dado ao <tbody> da tabela (para preenchê-lo depois).
+         * @returns {string} - O HTML completo da estrutura da tabela.
+         */
         function createTableStructure(title, headers, bodyId) {
             return `<div class="bg-white rounded-lg overflow-hidden mt-8"><h2 class="text-xl font-semibold text-gray-700 p-4">${title}</h2><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr>${headers.map(h => `<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${h}</th>`).join('')}<th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th></tr></thead><tbody id="${bodyId}" class="bg-white divide-y divide-gray-200"><tr id="${bodyId}-loader"><td colspan="${headers.length + 1}"><div class="loader"></div></td></tr></tbody></table></div></div>`;
         }
 
+        /**
+         * Cria o card de orçamento (meta) que aparece no topo das abas. É um template.
+         * @param {string} title - Título do card (ex: "Orçamento de Materiais").
+         * @param {string} categoryId - O ID da categoria (ex: "materiais").
+         * @param {number} totalGasto - O valor total já gasto.
+         * @param {number} orcamento - O valor da meta (orçamento) definido.
+         * @returns {string} - O HTML completo do card de orçamento.
+         */
         function createBudgetCard(title, categoryId, totalGasto, orcamento) {
             const restante = orcamento - totalGasto;
             const progresso = orcamento > 0 ? (totalGasto / orcamento) * 100 : 0;
 
+            // Muda a cor da barra de progresso (azul, amarela, vermelha)
             let progressColor = 'bg-blue-600';
             if (progresso > 100) progressColor = 'bg-red-600';
             else if (progresso > 75) progressColor = 'bg-yellow-500';
             
+            // Retorna o HTML do card
             return `
                 <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+                    <!-- ... (HTML do card, campo de input, botão salvar, barra de progresso) ... -->
                     <h3 class="text-lg font-bold text-gray-800">${title}</h3>
                     <div class="mt-2">
                         <label for="${categoryId}-budget" class="text-sm font-medium text-gray-700">Definir Orçamento Total</label>
@@ -177,43 +290,70 @@
             `;
         }
         
+        /**
+         * Desenha (ou redesenha) o conteúdo completo da aba 'Materiais'.
+         * Pega os dados de 'data.materiais' e 'data.orcamentos'.
+         */
         function renderMateriaisUI() {
             const container = document.getElementById('materiais-content');
-            if(!container) return;
+            if(!container) return; // Se a aba não existe na página, para a função
 
+            // 1. Calcula o total gasto somando o 'custoReal' de todos os materiais
             const totalGasto = data.materiais.reduce((acc, item) => acc + (item.custoReal || 0), 0);
+            // 2. Pega o orçamento (meta) definido para materiais
             const orcamento = data.orcamentos.materiais || 0;
             
+            // 3. Cria o HTML do card de orçamento e da estrutura da tabela
             const budgetCardHtml = createBudgetCard('Orçamento de Materiais', 'materiais', totalGasto, orcamento);
-            const tableHtml = createTableStructure('Histórico de Compras', ['Etapa', 'Item', 'Custo Real', 'Fornecedor', 'Data'], 'materiais-body');
-            container.innerHTML = budgetCardHtml + tableHtml;
+            const tableHtml = createTableStructure('Histórico de Compras', ['Custo Real', 'Data', 'Item', 'Fornecedor', 'Etapa'], 'materiais-body');
+            container.innerHTML = budgetCardHtml + tableHtml; // Coloca o HTML "esqueleto" na página
 
+            // 4. Preenche a tabela com os dados reais
             const tbody = document.getElementById('materiais-body');
-            tbody.innerHTML = data.materiais.map(item => `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.etapa || ''}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.item || ''}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(item.custoReal)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.fornecedor || '-'}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.data || '-'}</td>${App.createActionsCell('materiais', item.id)}</tr>`).join('');
+            tbody.innerHTML = [...data.materiais] // Cria uma cópia (para não alterar o array original)
+                .sort((a, b) => (b.data || '').localeCompare(a.data || '')) // Ordena (mais recente primeiro)
+                .map(item => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(item.custoReal)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(item.data)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.item || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.fornecedor || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.etapa || ''}</td>
+                        ${App.createActionsCell('materiais', item.id)}
+                    </tr>
+                `).join(''); // Junta todas as linhas em uma string
         }
         
+        /**
+         * Desenha (ou redesenha) o conteúdo completo da aba 'Mão de Obra'.
+         * Pega os dados de 'data.servicos' e 'data.pagamentos'.
+         */
         function renderMaoDeObraUI() {
             const container = document.getElementById('mao-de-obra-content');
             if (!container) return;
 
+            // 1. Cria os "Contratos" (cards de serviço)
             let contractsHtml = '<div class="space-y-6">';
             if (data.servicos.length === 0) {
                  contractsHtml += `<div class="text-center py-12 px-6 bg-gray-50 rounded-lg"><p class="text-gray-500">Nenhum contrato de serviço adicionado.</p><p class="text-sm text-gray-400 mt-1">Comece adicionando um contrato para acompanhar as metas.</p></div>`;
             }
-
+            // Itera sobre cada serviço (contrato) para criar um card
             data.servicos.forEach(servico => {
+                // Filtra os pagamentos SÓ desse serviço
                 const pagamentosDoServico = data.pagamentos.filter(p => p.servicoId === servico.id);
+                // Calcula o total pago para esse serviço
                 const totalPago = pagamentosDoServico.reduce((acc, p) => acc + (p.valor || 0), 0);
                 const valorMeta = servico.valorMeta || 0;
                 const restante = valorMeta - totalPago;
                 const progresso = valorMeta > 0 ? (totalPago / valorMeta) * 100 : 0;
-
                 let progressColor = 'bg-blue-600';
                 if (progresso > 100) progressColor = 'bg-red-600';
                 else if (progresso > 75) progressColor = 'bg-yellow-500';
 
+                // Adiciona o HTML do card do contrato
                 contractsHtml += `
                     <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                        <!-- ... (HTML do card: título, barra de progresso, botão "Adicionar Pagamento") ... -->
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-lg font-bold text-gray-800">${servico.nome}</h3>
@@ -229,52 +369,95 @@
                             <div class="flex justify-between text-sm mt-2"><span class="font-medium text-gray-600">Progresso (${progresso.toFixed(0)}%)</span><span class="font-bold text-gray-800">${formatCurrency(totalPago)} / ${formatCurrency(valorMeta)}</span></div>
                             <p class="text-right text-xs ${restante >= 0 ? 'text-green-600' : 'text-red-600'} font-medium mt-1">${restante >= 0 ? 'Restante: ' : 'Excedido: '} ${formatCurrency(Math.abs(restante))}</p>
                         </div>
+                        <!-- Botão "Adicionar Pagamento" passa o ID do serviço no 'context' -->
                         <div class="mt-4 border-t pt-4"><button onclick="window.App.openModal('pagamento', null, { servicoId: '${servico.id}' })" class="w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">Adicionar Pagamento</button></div>
                     </div>`;
             });
             contractsHtml += '</div>';
 
-            const paymentsTableHtml = createTableStructure('Histórico de Pagamentos', ['Data', 'Descrição', 'Valor', 'Contrato Vinculado'], 'pagamentos-body');
+            // 2. Cria a estrutura da tabela de "Histórico de Pagamentos"
+            const paymentsTableHtml = createTableStructure('Histórico de Pagamentos', ['Valor', 'Data', 'Descrição', 'Contrato Vinculado'], 'pagamentos-body');
+            // 3. Coloca os cards e a tabela na página
             container.innerHTML = contractsHtml + '<div class="mt-12">' + paymentsTableHtml + '</div>';
             
+            // 4. Preenche a tabela de pagamentos com os dados
             const tbodyPagamentos = document.getElementById('pagamentos-body');
-            document.getElementById('pagamentos-body-loader')?.remove();
-            tbodyPagamentos.innerHTML = data.pagamentos.map(p => {
-                const servicoAssociado = data.servicos.find(s => s.id === p.servicoId);
-                return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.data || '-'}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${p.descricao || 'Pagamento'}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${formatCurrency(p.valor)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${servicoAssociado?.nome || 'N/A'}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button onclick="window.App.openModal('pagamento', '${p.id}', { servicoId: '${p.servicoId}' })" class="text-gray-400 hover:text-blue-600 p-1 rounded-full"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.App.deleteItem('pagamento', '${p.id}')" class="text-gray-400 hover:text-red-600 p-1 rounded-full"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`
+            document.getElementById('pagamentos-body-loader')?.remove(); // Remove o loader inicial
+            tbodyPagamentos.innerHTML = [...data.pagamentos] // Cria cópia
+                .sort((a, b) => (b.data || '').localeCompare(a.data || '')) // Ordena (mais recente primeiro)
+                .map(p => {
+                    // Encontra o nome do serviço associado a este pagamento
+                    const servicoAssociado = data.servicos.find(s => s.id === p.servicoId);
+                    return `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(p.valor)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(p.data)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${p.descricao || 'Pagamento'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${servicoAssociado?.nome || 'N/A'}</td>
+                            ${App.createActionsCell('pagamento', p.id)}
+                        </tr>
+                    `;
             }).join('');
         }
 
+        /**
+         * Desenha (ou redesenha) o conteúdo completo da aba 'Outros Custos'.
+         * Pega os dados de 'data["outros-custos"]' e 'data.orcamentos'.
+         */
         function renderOutrosCustosUI() {
             const container = document.getElementById('outros-custos-content');
             if(!container) return;
 
+            // 1. Calcula o total gasto
             const totalGasto = data['outros-custos'].reduce((acc, item) => acc + (item.valorPago || 0), 0);
+            // 2. Pega o orçamento
             const orcamento = data.orcamentos['outros-custos'] || 0;
 
+            // 3. Cria o HTML do card e da tabela
             const budgetCardHtml = createBudgetCard('Orçamento de Outros Custos', 'outros-custos', totalGasto, orcamento);
-            const tableHtml = createTableStructure('Histórico de Outros Custos', ['Tipo de Custo', 'Descrição', 'Valor Pago', 'Data'], 'outros-custos-body');
+            const tableHtml = createTableStructure('Histórico de Outros Custos', ['Valor Pago', 'Data', 'Descrição', 'Tipo de Custo'], 'outros-custos-body');
             container.innerHTML = budgetCardHtml + tableHtml;
             
+            // 4. Preenche a tabela com os dados
             const tbody = document.getElementById('outros-custos-body');
-            tbody.innerHTML = data['outros-custos'].map(item => `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.tipo || ''}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.descricao || ''}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(item.valorPago)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.data || '-'}</td>${App.createActionsCell('outros-custos', item.id)}</tr>`).join('');
+            tbody.innerHTML = [...data['outros-custos']] // Cria cópia
+                .sort((a, b) => (b.data || '').localeCompare(a.data || '')) // Ordena (mais recente primeiro)
+                .map(item => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(item.valorPago)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(item.data)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.descricao || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.tipo || ''}</td>
+                        ${App.createActionsCell('outros-custos', item.id)}
+                    </tr>
+                `).join('');
         }
 
+        /**
+         * Calcula e atualiza todos os valores do painel 'Resumo Geral'.
+         * Esta função é chamada por 'renderAll()' e usa os dados mais recentes da 'SEÇÃO 2'.
+         */
         function updateSummary() {
+            // 1. Helper interna para somar valores de um array de objetos
             const sum = (arr, key) => arr.reduce((acc, item) => acc + (parseFloat(item[key]) || 0), 0);
             
+            // 2. Soma os GASTOS REAIS de cada categoria
             const materiaisReal = sum(data.materiais, 'custoReal');
             const maoDeObraReal = sum(data.pagamentos, 'valor');
             const outrosReal = sum(data['outros-custos'], 'valorPago');
             
+            // 3. Soma os CUSTOS PREVISTOS (orçamentos/metas) de cada categoria
             const materiaisPrevisto = data.orcamentos.materiais || 0;
-            const maoDeObraPrevisto = sum(data.servicos, 'valorMeta');
+            const maoDeObraPrevisto = sum(data.servicos, 'valorMeta'); // A meta de Mão de Obra é a soma das metas dos contratos
             const outrosPrevisto = data.orcamentos['outros-custos'] || 0;
 
+            // 4. Calcula os totais
             const totalPrevisto = materiaisPrevisto + maoDeObraPrevisto + outrosPrevisto;
             const totalReal = materiaisReal + maoDeObraReal + outrosReal;
             const diferenca = totalPrevisto - totalReal;
 
+            // 5. Atualiza o HTML da aba "Resumo" com os novos valores
+            // (Cards de detalhes por categoria)
             document.getElementById('materiais-total-real').textContent = formatCurrency(materiaisReal);
             document.getElementById('materiais-total-previsto').textContent = `Previsto: ${formatCurrency(materiaisPrevisto)}`;
             document.getElementById('mao-de-obra-total-real').textContent = formatCurrency(maoDeObraReal);
@@ -282,36 +465,58 @@
             document.getElementById('outros-custos-total-real').textContent = formatCurrency(outrosReal);
             document.getElementById('outros-custos-total-previsto').textContent = `Previsto: ${formatCurrency(outrosPrevisto)}`;
             
+            // (Cards principais)
             document.getElementById('total-real').textContent = formatCurrency(totalReal);
             document.getElementById('total-previsto').textContent = `Previsto: ${formatCurrency(totalPrevisto)}`;
             document.getElementById('diferenca-valor').textContent = formatCurrency(diferenca);
             
+            // 6. Atualiza a cor do card "Diferença" (verde se sobrar, vermelho se estourar)
             const diferencaCard = document.getElementById('diferenca-card');
-            diferencaCard.className = 'p-6 rounded-lg';
+            diferencaCard.className = 'p-6 rounded-lg'; // Reseta as classes de cor
             if (diferenca < 0) {
+                // Estourou o orçamento
                 diferencaCard.classList.add('bg-red-50', 'border-l-4', 'border-red-500');
                 diferencaCard.querySelector('#diferenca-status').textContent = `Acima do planejado`;
             } else {
+                // Dentro do orçamento
                 diferencaCard.classList.add('bg-green-50', 'border-l-4', 'border-green-500');
                 diferencaCard.querySelector('#diferenca-status').textContent = `Abaixo do planejado`;
             }
+
+            // 7. Atualiza a barra de progresso do orçamento total
             const progresso = totalPrevisto > 0 ? (totalReal / totalPrevisto) * 100 : 0;
             document.getElementById('progresso-barra').style.width = `${Math.min(progresso, 100)}%`;
             document.getElementById('progresso-texto').textContent = `${progresso.toFixed(0)}% do orçamento previsto utilizado.`;
             
+            // 8. Re-renderiza os ícones (necessário após mudar o HTML)
             lucide.createIcons();
         }
         
         // =================================================================================
-        // SEÇÃO 5: O OBJETO 'APP' (O Coração da Aplicação)
+        // SEÇÃO 5: O OBJETO 'APP' (O "CONTROLADOR" DA APLICAÇÃO)
+        // Agrupa todas as funções que mudam o estado ou interagem com o usuário.
         // =================================================================================
         
         const App = {
+            
+            /**
+             * Cria o HTML para os botões de 'Editar' e 'Excluir' da tabela.
+             * @param {string} category - A categoria (ex: 'materiais').
+             * @param {string} id - O ID do documento no Firebase.
+             * @returns {string} - O HTML da célula (<td>) de ações.
+             */
             createActionsCell(category, id) {
                 return `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button onclick="window.App.openModal('${category}', '${id}')" class="text-gray-400 hover:text-blue-600 p-1 rounded-full"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.App.deleteItem('${category}', '${id}')" class="text-gray-400 hover:text-red-600 p-1 rounded-full"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>`;
             },
+            
+            /**
+             * Controla a navegação por abas.
+             * @param {string} tabName - O nome da aba para ativar (ex: 'resumo').
+             */
             changeTab(tabName) {
-                activeTab = tabName;
+                activeTab = tabName; // Atualiza o estado
+                
+                // 1. Atualiza a aparência (classe CSS) dos botões de aba
                 document.querySelectorAll('.tab').forEach(tab => {
                     const isCurrentTab = tab.dataset.tab === tabName;
                     tab.classList.toggle('tab-active', isCurrentTab);
@@ -319,69 +524,114 @@
                     tab.classList.toggle('text-gray-500', !isCurrentTab);
                 });
 
+                // 2. Mostra o conteúdo da aba certa e esconde os outros
                 document.querySelectorAll('.content-section').forEach(content => {
                     const isCurrentContent = content.id === `${tabName}-content`;
                     content.classList.toggle('content-active', isCurrentContent);
                 });
                 
+                // 3. Atualiza o botão "Adicionar" para o contexto da aba
                 this.updateAddItemButton();
             },
+            
+            /**
+             * Mostra o botão "Adicionar" correto para a aba ativa (ou esconde).
+             */
             updateAddItemButton() {
                 const container = document.getElementById('add-item-button-container');
-                if (activeTab === 'resumo' || activeTab === 'mao-de-obra') {
+                if (activeTab === 'resumo') {
+                    // Sem botão na aba Resumo
                     container.innerHTML = '';
-                     if (activeTab === 'mao-de-obra') {
-                         container.innerHTML = `<button onclick="window.App.openModal('servico')" class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i data-lucide="plus" class="w-5 h-5 mr-2"></i>Adicionar Contrato</button>`;
-                     }
+                } else if (activeTab === 'mao-de-obra') {
+                    // Botão "Adicionar Contrato"
+                    container.innerHTML = `<button onclick="window.App.openModal('servico')" class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i data-lucide="plus" class="w-5 h-5 mr-2"></i>Adicionar Contrato</button>`;
                 } else {
+                    // Botão "Adicionar Material" ou "Adicionar Outro Custo"
                      const categoryMap = { 
-                        materiais: { name: 'Material', type: 'materiais' }, 
-                        'outros-custos': { name: 'Outro Custo', type: 'outros-custos' }
+                         materiais: { name: 'Material', type: 'materiais' }, 
+                         'outros-custos': { name: 'Outro Custo', type: 'outros-custos' }
                     };
                     const currentCategory = categoryMap[activeTab];
                     container.innerHTML = `<button onclick="window.App.openModal('${currentCategory.type}')" class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i data-lucide="plus" class="w-5 h-5 mr-2"></i>Adicionar ${currentCategory.name}</button>`;
                 }
                 
-                lucide.createIcons();
+                lucide.createIcons(); // Re-ativa os ícones
             },
+            
+            /**
+             * Abre a janela (modal) para adicionar ou editar um item.
+             * @param {string} type - O tipo de item (ex: 'materiais', 'servico', 'pagamento').
+             * @param {string | null} id - O ID do item (se for edição) ou null (se for novo).
+             * @param {object} context - Dados extras (ex: { servicoId: '...' }).
+             */
             openModal(type, id = null, context = {}) {
-                editingItemId = id;
-                currentModalContext = context;
+                editingItemId = id; // Guarda o ID (se for edição)
+                currentModalContext = context; // Guarda o contexto (ex: servicoId)
                 const form = document.getElementById('item-form');
                 const modalTitle = document.getElementById('modal-title');
                 let item = {};
                 
+                // Define a coleção do Firebase (pagamento é especial)
                 const collectionName = type === 'pagamento' ? 'pagamentos' : (type === 'servico' ? 'servicos' : type);
+                
+                // 1. Decide se é um item novo ou edição
                 if (id) {
+                    // Se tem ID, busca o item nos dados locais para preencher o form
                     item = data[collectionName]?.find(i => i.id === id) || {};
                 }
 
+                // 2. Define o título do modal
                 modalTitle.textContent = (id ? 'Editar ' : 'Adicionar ') + 
                     {servico: 'Contrato de Serviço', pagamento: 'Pagamento', materiais: 'Material', 'outros-custos': 'Outro Custo'}[type];
 
+                // 3. Cria os campos do formulário dinamicamente
                 form.innerHTML = this.getFormFields(type, item);
+                
+                // 4. Define o que o botão "Salvar" do form faz
                 form.onsubmit = (e) => this.saveItem(e, type);
+                
+                // 5. Mostra o modal
                 document.getElementById('item-modal').classList.remove('hidden');
                 document.getElementById('item-modal').classList.add('flex');
                 lucide.createIcons();
             },
+            
+            /**
+             * Fecha a janela de adição/edição e reseta o estado.
+             */
             closeModal() {
                 document.getElementById('item-modal').classList.add('hidden');
                 document.getElementById('item-modal').classList.remove('flex');
-                editingItemId = null;
-                currentModalContext = {};
+                editingItemId = null; // Reseta o ID de edição
+                currentModalContext = {}; // Reseta o contexto
             },
+            
+            /**
+             * Cria os campos do formulário (HTML) dinamicamente, com base no 'type'.
+             * @param {string} type - O tipo de item (ex: 'materiais').
+             * @param {object} item - O objeto com os dados do item (para preencher o form na edição).
+             * @returns {string} - O HTML dos campos do formulário.
+             */
             getFormFields(type, item = {}) {
                 const createField = (label, id, inputType = 'text', value = '', props = '') => `<div><label for="${id}" class="block text-sm font-medium text-gray-700">${label}</label><input type="${inputType}" id="${id}" name="${id}" value="${value}" ${props} class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>`;
                 let fields = '';
+                // Um 'switch' define quais campos criar para cada tipo de formulário
                 switch (type) {
                     case 'materiais': fields = `${createField('Etapa da Obra', 'etapa', 'text', item.etapa || '')}${createField('Item', 'item', 'text', item.item || '')}${createField('Custo Real', 'custoReal', 'number', item.custoReal || '', 'step="0.01"')}${createField('Fornecedor', 'fornecedor', 'text', item.fornecedor || '')}${createField('Data da Compra', 'data', 'date', item.data || '')}`; break;
                     case 'servico': fields = `${createField('Nome do Serviço (Contrato)', 'nome', 'text', item.nome || '')}${createField('Profissional/Empresa', 'profissional', 'text', item.profissional || '')}${createField('Valor Meta (Total)', 'valorMeta', 'number', item.valorMeta || '', 'step="0.01"')}`; break;
                     case 'pagamento': fields = `${createField('Descrição do Pagamento', 'descricao', 'text', item.descricao || '')}${createField('Valor Pago', 'valor', 'number', item.valor || '', 'step="0.01"')}${createField('Data do Pagamento', 'data', 'date', item.data || '')}`; break;
                     case 'outros-custos': fields = `${createField('Tipo de Custo', 'tipo', 'text', item.tipo || '')}${createField('Descrição', 'descricao', 'text', item.descricao || '')}${createField('Valor Pago', 'valorPago', 'number', item.valorPago || '', 'step="0.01"')}${createField('Data do Pagamento', 'data', 'date', item.data || '')}`; break;
                 }
+                // Retorna os campos + botões de Cancelar/Salvar
                 return fields + `<div class="pt-2 flex justify-end space-x-3"><button type="button" onclick="window.App.closeModal()" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">Cancelar</button><button id="save-form-btn" type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">Salvar</button></div>`;
             },
+            
+            /**
+             * Mostra a janela de confirmação de exclusão.
+             * @param {string} title - O título do modal.
+             * @param {string} text - O texto de aviso.
+             * @param {function} onConfirmCallback - A função que será chamada se o usuário clicar em "Excluir".
+             */
             showConfirmModal(title, text, onConfirmCallback) {
                 document.getElementById('confirm-modal-title').textContent = title;
                 document.getElementById('confirm-modal-text').textContent = text;
@@ -392,107 +642,151 @@
                 const confirmBtn = document.getElementById('confirm-delete-btn');
                 const cancelBtn = document.getElementById('cancel-delete-btn');
                 
+                // Reseta o estado dos botões (para evitar bugs de cliques repetidos)
                 confirmBtn.disabled = false;
                 cancelBtn.disabled = false;
                 confirmBtn.innerHTML = 'Excluir';
 
+                // Define o que o botão "Excluir" faz
                 confirmBtn.onclick = () => onConfirmCallback(confirmBtn, cancelBtn);
                 
                 lucide.createIcons();
             },
+            
+            /**
+             * Fecha a janela de confirmação.
+             */
             closeConfirmModal() {
                 document.getElementById('confirm-modal').classList.add('hidden');
                 document.getElementById('confirm-modal').classList.remove('flex');
             },
+            
+            /**
+             * Salva um item novo ou editado no Firebase (Ação de C-U-D: Criar ou Atualizar).
+             * @param {Event} event - O evento de submit do formulário.
+             * @param {string} type - O tipo de item (ex: 'materiais').
+             */
             async saveItem(event, type) {
-                event.preventDefault();
+                event.preventDefault(); // Impede o recarregamento da página (comportamento padrão do form)
                 const saveButton = event.target.querySelector('button[type="submit"]');
                 if (!saveButton) return;
 
+                // Ativa o 'spinner' de carregamento no botão
                 const originalButtonHTML = saveButton.innerHTML;
                 saveButton.disabled = true;
                 saveButton.innerHTML = `<div class="w-5 h-5 border-2 border-white spinner rounded-full animate-spin mx-auto"></div>`;
 
+                // 1. Pega todos os dados dos campos do formulário
                 const formData = new FormData(event.target);
                 const newItemData = Object.fromEntries(formData.entries());
                 
+                // 2. Converte campos de número (que vêm como string) para o tipo 'number'
                 Object.keys(newItemData).forEach(key => {
                     if (['custoReal', 'valorMeta', 'valor', 'valorPago'].includes(key)) {
                         newItemData[key] = parseFloat(newItemData[key]) || 0;
                     }
                 });
 
+                // 3. Adiciona o 'servicoId' se for um pagamento (veio do 'currentModalContext')
                 if (type === 'pagamento' && currentModalContext.servicoId) {
                     newItemData.servicoId = currentModalContext.servicoId;
                 }
 
+                // 4. Define a "coleção" (pasta) no Firebase onde salvar
                 const collectionName = type === 'pagamento' ? 'pagamentos' : (type === 'servico' ? 'servicos' : type);
 
+                // 5. Salva no Firebase
                 try {
                     if (editingItemId) {
+                        // Se tínhamos um ID, ATUALIZA (update) o documento existente
                         await updateDoc(doc(db, collectionName, editingItemId), newItemData);
                     } else {
+                        // Se não tinha ID, ADICIONA (add) um novo documento
                         await addDoc(collection(db, collectionName), newItemData);
                     }
-                    this.closeModal();
+                    this.closeModal(); // Fecha o modal se deu certo
                 } catch (e) {
                     console.error("Erro ao salvar documento: ", e);
-                    alert("Ocorreu um erro ao salvar. Verifique o console para mais detalhes.");
-                    saveButton.disabled = false;
-                    saveButton.innerHTML = originalButtonHTML;
+                    // Não usamos alert() - mas em um app real, mostraríamos um erro na UI
+                    saveButton.disabled = false; // Re-ativa o botão
+                    saveButton.innerHTML = originalButtonHTML; // Restaura o texto
                 }
             },
+            
+            /**
+             * Salva o valor do orçamento (meta) no Firebase.
+             * @param {string} categoryId - O ID da categoria (ex: 'materiais').
+             */
             async saveOrcamento(categoryId) {
                 const input = document.getElementById(`${categoryId}-budget`);
-                const button = input.nextElementSibling;
+                const button = input.nextElementSibling; // Pega o botão "Salvar"
+                
+                // Ativa o loader
                 const originalButtonHTML = button.innerHTML;
                 button.disabled = true;
                 button.innerHTML = `<div class="w-5 h-5 border-2 border-white spinner rounded-full animate-spin mx-auto"></div>`;
 
                 const valorMeta = parseFloat(input.value) || 0;
                 try {
+                    // Salva o valor na coleção "orcamentos" usando o ID da categoria (ex: "materiais")
+                    // 'setDoc' com 'merge: true' cria o documento se não existir, ou atualiza se existir.
                     await setDoc(doc(db, "orcamentos", categoryId), { valorMeta }, { merge: true });
                 } catch (e) {
                     console.error("Erro ao salvar orçamento: ", e);
-                    alert("Ocorreu um erro ao salvar o orçamento.");
                 } finally {
+                    // Desativa o loader
                     button.disabled = false;
                     button.innerHTML = originalButtonHTML;
                 }
             },
+            
+            /**
+             * Deleta um item do Firebase (Ação de C-U-D: Deletar).
+             * @param {string} type - O tipo de item.
+             * @param {string} id - O ID do documento a ser deletado.
+             */
             async deleteItem(type, id) {
                 const collectionName = type === 'pagamento' ? 'pagamentos' : (type === 'servico' ? 'servicos' : type);
                 
+                // Define o texto de confirmação
                 let title = 'Excluir Item';
                 let text = 'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.';
 
+                // CASO ESPECIAL: Se deletar um "servico", deleta os "pagamentos" juntos.
                 if (type === 'servico') {
                     title = 'Excluir Contrato de Serviço?';
                     text = 'Isso irá excluir o contrato e TODOS os pagamentos vinculados a ele. Esta ação é irreversível.';
                 }
 
+                // 1. Mostra o modal de confirmação
                 this.showConfirmModal(title, text, async (confirmButton, cancelButton) => {
+                    // Ativa o loader no botão "Excluir"
                     const originalButtonText = confirmButton.innerHTML;
                     confirmButton.disabled = true;
                     cancelButton.disabled = true;
                     confirmButton.innerHTML = `<div class="w-5 h-5 border-2 border-white spinner rounded-full animate-spin mx-auto"></div>`;
 
                     try {
+                        // 2. Se for 'servico', primeiro deleta os 'pagamentos' vinculados
                         if (type === 'servico') {
+                            // Cria uma consulta (query) para achar todos os pagamentos com o 'servicoId'
                             const q = query(collection(db, "pagamentos"), where("servicoId", "==", id));
                             const querySnapshot = await getDocs(q);
+                            // Cria um array de "promessas" de exclusão
                             const deletePromises = [];
                             querySnapshot.forEach((doc) => {
                                 deletePromises.push(deleteDoc(doc.ref));
                             });
+                            // Executa todas as exclusões em paralelo
                             await Promise.all(deletePromises);
                         }
 
+                        // 3. Deleta o item principal (servico, material, ou outro-custo)
                         await deleteDoc(doc(db, collectionName, id));
-                        this.closeConfirmModal();
+                        this.closeConfirmModal(); // Fecha o modal
                     } catch (e) {
                         console.error("Erro ao deletar documento: ", e);
-                        alert("Ocorreu um erro ao deletar.");
+                        // Restaura os botões em caso de erro
                         confirmButton.disabled = false;
                         cancelButton.disabled = false;
                         confirmButton.innerHTML = originalButtonText;
@@ -500,47 +794,86 @@
                 });
             },
             
+            // =================================================================================
+            // SEÇÃO 6: INICIALIZAÇÃO DA APLICAÇÃO
+            // =================================================================================
+
+            /**
+             * Função principal que inicializa a aplicação (A "IGNIÇÃO").
+             * É chamada assim que o HTML da página termina de carregar.
+             */
             init() {
+                // Configura os "OUVINTES" (LISTENERS) EM TEMPO REAL
+                // onSnapshot é o "vigia" do Firebase. Ele roda uma vez quando a página
+                // carrega e, depois, roda DE NOVO automaticamente toda vez que
+                // algo muda no banco de dados (adicionar, editar, deletar).
+                
+                // Vigia a coleção 'materiais'
                 onSnapshot(collection(db, 'materiais'), (snapshot) => {
+                    // Quando 'materiais' muda, atualiza o "cérebro" local
                     data.materiais = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                    this.renderAll();
+                    this.renderAll(); // Manda redesenhar a tela inteira com os novos dados
                 });
+                
+                // Vigia a coleção 'servicos'
                 onSnapshot(collection(db, 'servicos'), (snapshot) => {
                     data.servicos = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                     this.renderAll();
                 });
+                
+                // Vigia a coleção 'pagamentos'
                 onSnapshot(collection(db, 'pagamentos'), (snapshot) => {
                     data.pagamentos = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                     this.renderAll();
                 });
+                
+                // Vigia a coleção 'outros-custos'
                 onSnapshot(collection(db, 'outros-custos'), (snapshot) => {
                     data['outros-custos'] = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                     this.renderAll();
                 });
+                
+                // Vigia a coleção 'orcamentos' (as metas)
                 onSnapshot(collection(db, 'orcamentos'), (snapshot) => {
-                    data.orcamentos = {};
+                    data.orcamentos = {}; // Reseta o objeto de orçamentos
                     snapshot.forEach(doc => {
+                        // Preenche o objeto (ex: data.orcamentos['materiais'] = 50000)
                         data.orcamentos[doc.id] = doc.data().valorMeta;
                     });
                     this.renderAll();
                 });
                 
+                // Define a aba 'resumo' como a inicial ao carregar a página
                 this.changeTab('resumo');
             },
 
+            /**
+             * Função "mestra" que redesenha TODAS as partes da interface que dependem dos dados.
+             * É chamada pelos 'onSnapshot' sempre que há uma mudança nos dados.
+             */
             renderAll() {
+                // Renderiza o conteúdo de CADA aba (mesmo as escondidas)
                 renderMateriaisUI();
                 renderMaoDeObraUI();
                 renderOutrosCustosUI();
-                updateSummary();
-                lucide.createIcons();
+                // O 'updateSummary' deve ser o último, pois ele depende dos cálculos
+                // feitos nas outras funções de render (embora agora estejam independentes)
+                // e dos dados atualizados em 'data'.
+                updateSummary(); 
+                
+                lucide.createIcons(); // Re-ativa os ícones (necessário após mudar o HTML)
             }
         };
 
+        // Torna o objeto 'App' acessível globalmente (na 'window')
+        // Isso permite que os botões no HTML (ex: onclick="window.App.changeTab(...)")
+        // consigam chamar as funções dentro do nosso 'App'.
         window.App = App;
         
+        // "Ouvinte" do navegador: Garante que o App.init() só rode
+        // depois que o HTML da página foi 100% carregado e lido.
         document.addEventListener('DOMContentLoaded', () => {
-            App.init();
+            App.init(); // Liga a aplicação!
         });
     </script>
 </body>
